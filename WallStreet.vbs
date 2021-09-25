@@ -1,22 +1,31 @@
-Sub Dosomething()
-    Dim xSh As Worksheet
+Sub Runallsheets()
+    Dim wSh As Worksheet
     Application.ScreenUpdating = False
-    For Each xSh In Worksheets
-        xSh.Select
+    For Each wSh In Worksheets
+        wSh.Select
         Call WallStreet
     Next
     Application.ScreenUpdating = True
 End Sub
 
 Sub WallStreet()
-    Dim total_vol As Double
+
+    Dim volumne_tot As LongLong
     Dim ticker As String
-    Dim ticker_counter, ticker_open_close_counter As Double
-    Dim yearly_open, yearly_end As Double
+    Dim ticker_ctr_sum As Double
+    Dim ticker_open_close_ctr As Double
+    Dim yearly_open As Double
+    Dim yearly_end As Double
     
-    total_vol = 0
-    ticker_counter = 2              ' keep track of row to write out ticker summary
-    ticker_open_close_counter = 2   ' keep track of row to save off open and close values
+    volumne_tot = 0
+    yearly_end = 0
+    yearly_open = 0
+    
+    'keep row ctr for ticker summary row
+    ticker_ctr_sum = 2
+    
+    'keep row ctr for open and close value
+    ticker_open_close_ctr = 2
     
     Range("I1").Value = "Ticker"
     Range("J1").Value = "Yearly Change"
@@ -24,40 +33,45 @@ Sub WallStreet()
     Range("L1").Value = "Total Stock Volume"
     
     For i = 2 To Cells(Rows.Count, 1).End(xlUp).Row
-
-        total_vol = total_vol + Cells(i, 7).Value
+        volumne_tot = volumne_tot + Cells(i, 7).Value
         ticker = Cells(i, 1).Value
-        yearly_open = Cells(ticker_open_close_counter, 3)
-        
-        ' If different ticker value, then summarize
+        yearly_open = Cells(ticker_open_close_ctr, 3)
+ 
+        ' write summary table
         If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+        
+            'set price for year end close
             yearly_end = Cells(i, 6)
-            Cells(ticker_counter, 9).Value = ticker
-            Cells(ticker_counter, 10).Value = yearly_end - yearly_open
-            ' If we have opening value = 0, then just set cell to null
-            ' to avoid dividing by 0
+            
+            'print ticker to sum table
+            Cells(ticker_ctr_sum, 9).Value = ticker
+            
+            'print year change to sum table
+            Cells(ticker_ctr_sum, 10).Value = yearly_end - yearly_open
+
             If yearly_open = 0 Then
-                Cells(ticker_counter, 11).Value = Null
+                Cells(ticker_ctr_sum, 11).Value = Null
             Else
-                Cells(ticker_counter, 11).Value = (yearly_end - yearly_open) / yearly_open
+                Cells(ticker_ctr_sum, 11).Value = (yearly_end - yearly_open) / yearly_open
             End If
-            Cells(ticker_counter, 12).Value = total_vol
+            
+            'print total volume
+            Cells(ticker_ctr_sum, 12).Value = volumne_tot
             
             ' Color the cell green if > 0, red if < 0
-            If Cells(ticker_counter, 10).Value > 0 Then
-                Cells(ticker_counter, 10).Interior.ColorIndex = 4
+            If Cells(ticker_ctr_sum, 10).Value > 0 Then
+                Cells(ticker_ctr_sum, 10).Interior.ColorIndex = 4
             Else
-                Cells(ticker_counter, 10).Interior.ColorIndex = 3
+                Cells(ticker_ctr_sum, 10).Interior.ColorIndex = 3
             End If
             
-            Cells(ticker_counter, 11).NumberFormat = "0.00%"
+            Cells(ticker_ctr_sum, 11).NumberFormat = "0.00%"
             
-            ' reset volume count to 0,
-            ' move to next row to write ticker summary to in new table,
-            ' update to first row of ticker group
-            total_vol = 0
-            ticker_counter = ticker_counter + 1
-            ticker_open_close_counter = i + 1
+            volumne_tot = 0
+            
+            ticker_ctr_sum = ticker_ctr_sum + 1
+            ticker_open_close_ctr = i + 1
+            
         End If
         
     Next i
@@ -67,4 +81,6 @@ Sub WallStreet()
     Columns("L").AutoFit
 
 End Sub
+
+
 
